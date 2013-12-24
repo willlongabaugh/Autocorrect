@@ -1,0 +1,37 @@
+module: trie.py
+A trie is a kind of tree that efficiently represents a lexicon.
+
+The class Node implements the nodes of the trie. All fields are mandatory for the constructor.
+
+Fields:
+end -- True if the node marks a valid word
+parent -- the parent node
+children -- a dict mapping lowercase letters (and apostrophe) onto child nodes
+freq -- a frequency value
+cap -- denotes first-letter capitalization of a word
+allcap -- denotes all-letter capitalization of a word
+word -- a string containing the word represented by this node. This is the string representation (__repr__()) of a Node object.
+char -- the character it represents (i.e., its key in the parent node's dict)
+Methods:
+getWordWithCap() -- returns as a string the word represented by the node, capitalized according to the cap and allcap fields
+getString() -- returns the string represented by the node by traversing the tree upward. This will work even if the node does not represent a valid word.
+
+The class Trie contains a root node, and has methods for looking up words and adding words.
+
+Fields:
+header -- the root node
+Methods:
+add(s,freq=0,cap=False,allCap=False): adds a word s to the trie with the specified parameters; if it is already there, does nothing. Creates new nodes as needed.
+lookup(s): looks up s. If a node is found representing s and it is a valid word, returns that node; otherwise, returns None.
+
+
+file:generate.py
+The file contains one function, genlexicon(), which returns a Trie object. The goal of this function is to add every valid word to the trie with proper capitalization data, add frequency data for words where it is available, and for those words that have possessives, add the possessive.
+
+The main sources of words are the 2of12inf and 6of12 dictionaries from the 12dicts project. Additionally, there are some geographic terms stored in geo.txt, lists of names from the SSA in the names folder, and a developer-generated list of words in amherst.txt. To add these words to the trie, punctuation is stripped from the end, words with unusual punctuation are discarded, and the word is lowercased and added -- but with the proper capitalization information passed to the add method. Two-letter acronyms are ignored entirely, because they add too much noise to the lexicon.
+
+If you want to add new words to the trie, it is important that these contain no characters other than apostrophes and lowercase letters, and that you pass along any relevant frequency or capitalization information.
+
+Frequency data of words is derived from the file count_1w.txt, which records the results of a web crawl. The data is not high quality, and could be replaced. Frequency is stored as a dict with words as keys, and is looked up when a word from 2of12inf or 6of12 is added to the trie, and scaled by the value in frequency_scale.
+
+Possessives are added for proper names from the SSA database, for geographic words, and for any words marked as nouns by the AGID project. The AGID files are used to produce two Python sets, singlenouns and pluralnouns. When a word is added, if it is in singlenouns, word+"'s" is added as well, with the same frequency. For words in pluralnouns, word + "'" is added. (Names are not looked up but they always get possessives.) The possessives themselves are treated no differently than any other word in the trie.

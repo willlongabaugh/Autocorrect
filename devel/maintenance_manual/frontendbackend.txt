@@ -1,0 +1,41 @@
+The module decentcorrect.py contains the main script that executes the DecentCorrect user interface as well as DecentCorrect's own interface to its back end.
+
+picklename:
+
+	Future maintainers should know that the filename from which to load the pickled trie can be easily changed in line 13.
+
+class Backend:
+
+      The BackEnd class is DecentCorrect's interface with the Robert-Perry algorithm. The BackEnd constructor is passed a Trie object (trie -> self.trie); from this it constructs its own instance of the Robert-Perry algorithm (self.rp) and assigns default initial values to its other attributes (self.first, self.last, self.string, self.suggestions, self.suggestionsCap, self.active). For more details on these fields, consult the comments in the code.
+
+      getStringFromCand(self, c) takes in a candidate c (a (node, score) tuple or a ((node, node), score) tuple) and returns the string associated therewith (st) by a call or series of calls to Trie Node methods.
+
+      check(self, s) takes in a string from prepare(self, f, l, s) and returns a boolean indicating whether the string ought to be checked against the lexicon for correction (True) or left alone (False) due to the presence of bizarre punctuation or capitalization. The details of this determination are laid out in the code comments. By the time a string makes it to check(self, s), the assumption is that all legitimate beginning and ending punctuation has been stripped and that all alphabetic characters are lowercase.
+
+      prepare(self, f, l, s) takes in two ints (a first and last index, respectively) and a string. It prepares the string for comparison against the lexicon, stripping certain punctuation, handling capitalization, and making a call to check(self, s). If check(self, s) returns True, it returns a boolean indicating whether the input string was capitalized, adjursted markers of the string's first and last indicies, and the modified string itself. If check(self, s) returns False, it instead returns default values for the first three elements of the tuple and None for the string, which is interpreted in correct(self, s) as an error value.
+
+      correct(self, s) takes in a string representing the whole entry text at the time of the method call and returns a first and last index, indicating which characters to remove from the entry field, a string to insert as the correction, and a boolean indicating whether or not a "real" correction was made--if False, the corrected string is identical to the string it replaces. After a call to prepare(self, f, l, s) to ready the last word of its input for comparison against the lexicon, correct(self, s) calls on the Robert-Perry algorithm to find candidate corrections (findCandidates). If any candidates are returned, it returns the best one as a correction and stores the rest as suggestions for possible later use.
+
+      reject(self) returns the first and last indices of the most recent correction as well as the string that inhabited those indices pre-correction.
+
+      learn(self, s) takes in a string and adds it to the trie via the add method of trie (which does nothing if the word is already in the lexicon). To prepare the string for trie insertion, learn(self, s) calls prepare(self, f, l, s) with dummy variables for the indices.
+
+      takeSuggestion(self, i) takes an int specifying the suggestion to take and returns the corresponding string using a call to getStringFromCand(self, c)
+
+main script:
+
+     DecentCorrect's main script begins by creating a Trie object to hold the lexicon, either by loading a preexisting Trie object from a pickled state or, if that fails, by generating a Trie with a call to genlexicon(). It then constructs a BackEnd object with this Trie. Next it generates a Tkinter app, assigning it a title and geometry, as well as a trie-saving protocol to follow on window closure, specified in saveTrie(). Two Tkinter StringVar objects are constructed and set to default initial values, and a Tkinter Entry object is constructed with the main app (app).
+
+     Next a number of front end functions are defined:
+
+     correct() handles the correction behavior in the front end. It clears the old back end suggestions list (since a new word is now up for consideration), calls the back end's correct(self, s) method, and resets the StringVars appropriately to list the change and the alternate suggestions. It also enables keybindings (backend.active = True) as long as suggestions exist, since keybindings are only enabled in the back end in the event of a real correction.
+
+     reject(event) handles the rejection behavior in the front end. As long as keybindings are enabled (backend.active is True), reject() calls the back end reject(self) method and returns the entry field to its previous state appropriately. When it is finished, it disables keybindings (backend.active = False) and clears the back end suggestions list and StringVars.
+
+     takeS0(event), takeS1(event), and takeS2(event) all handle the taking of suggestions in the front end. So long as a suggestion exists corresponding to the number of the function, these functions substitute the suggestion for the previously made correction. Like reject(event), these functions finish by disabling keybindings and clearing the suggestions list and StringVars.
+
+     send(event) handles DecentCorrect's mock sending capabilities. In order to determine when a message is ready to be sent and when it is in need of further correction before sending, send(event) relies on the global variable state declared on line 242. send(event) checks the current state of the entry field (before) against the saved state (state). If they are different, or there is no saved state, send(event) calls correct() to correct the final word of the message. After this it checks the entry state again (after). If the before and after states are the same, no real correction took place, so the message "sends", the entry field is cleared, and the message's words are all sent to the back end to be learned by learn(self, s). If the two are different, a real correction took place and the before state is saved. If the before state was originally the same as the saved state, the user has reverted his or her text to one they previously attempted to send, so no further correction should be attempted--instead, the same sending actions are performed.
+
+     correctShortcut(event) simply calls correct() to allow keybindings to access the method just as well as the send(event) method does.
+
+     Finally, keybindings are specified and the Entry and Labels are packed. A future maintainer should note that all control-character keybindings are specified for both the lower and upper case. The call to app.mainloop() generates the DecentCorrect GUI.

@@ -1,0 +1,12 @@
+DecentCorrect, an empowering autocorrect system
+=================================================
+
+The interface:
+The interface consists of a single text field. When a word is entered (by pressing SPACE or typing "-"), DecentCorrect searches its lexicon. If the word is not found, it automatically corrects it to its best suggestion, prints the change it made, and also gives the three next best suggestions. If the word is found, DecentCorrect will leave it alone, but still recommends three suggestions.  If you want to revert to the text you actually typed, press CTRL-Z. To choose an alternate suggestion, press CTRL-J, K, or L for the first, second, and third suggestions respectively. When you are done typing your message, press return to send it. DecentCorrect will add any unfamiliar words in the message to its lexicon.
+
+There are some special situations. Some words (particularly names and acronyms) are stored with special capitalization rules. When these words are suggested, it will always be with their stored capitalization. If you type in a word that starts with a capital letter (such as at the beginning of the sentence), the first letter will stay capitalized no matter what word it is corrected to. Capitalized words will not be added to the lexicon when a message is sent. If you type in words with multiple capital letters, or mixed with punctuation other than apostrophes, they will be left alone. Periods, commas, semicolons, exclamation marks, and question marks are ignored: words adjacent to these will still be corrected.
+
+The lexicon:
+The lexicon is stored in the file "trie.pickle" in the DecentCorrect directory. When DecentCorrect starts up, it looks for this file; if it is not found, it regenerates the lexicon from its dictionaries. When DecentCorrect is shut down, it saves the lexicon (included any newly-learned words) in the same file. If you wish to remove all learned words from your lexicon, simply delete "trie.pickle" and the next time the program starts, the lexicon will be restored to its original condition.
+
+The lexicon contains words from many sources -- common English words, acronyms, a list of American names, and some geographic places, along with the possessives of most nouns.
